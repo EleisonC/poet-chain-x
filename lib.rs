@@ -26,6 +26,36 @@ mod poet_chain_x {
         active: bool,
     }
 
+    #[ink(event)]
+    pub struct AuctionCreated {
+        #[ink(topic)]
+        seller: Address,
+        #[ink(topic)]
+        poem_id: [u8; 32], // hash of the poem
+        poem_text: String,  // optional, may be big in storage but cheap in event
+    }
+    
+    #[ink(event)]
+    pub struct BidPlaced {
+        #[ink(topic)]
+        bidder: Address,
+        amount: Balance,
+    }
+
+    #[ink(event)]
+    pub struct BidRefunded {
+        #[ink(topic)]
+        previous_bidder: Address,
+        amount: Balance,
+    }
+
+    #[ink(event)]
+    pub struct AuctionEnded {
+        #[ink(topic)]
+        winner: Option<AccountId>,
+        amount: Balance,
+    }
+
     impl PoetChainX {
         /// BlockNumber is whatever type the chain defines as its block number in its environment
         /// On Substrate-based chains, BlockNumber is usually just a u32 or u64.
