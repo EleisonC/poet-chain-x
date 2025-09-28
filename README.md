@@ -42,6 +42,13 @@ Auction your original poetry online on the Polkadot blockchain
     - Refund previous highest bidder.
     - Update highest bid and bidder.  
 
+3. **End Auction**
+    - Only allowed after auction end block.
+    - Transfer highest bid to seller.
+    - Mark auction as inactive.
+    - Optional: Make auction terminatable to clean up contract instance.
+
+---
 
 ## Notes
 - That’s the “one contract = one auction instance” pattern.
