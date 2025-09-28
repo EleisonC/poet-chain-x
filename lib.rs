@@ -3,10 +3,14 @@
 #[ink::contract]
 mod poet_chain_x {
     use ink::primitives::{U256};
+    use ink::env::hash::{Blake2x256, HashOutput};
+    use ink::env::hash_bytes;
 
     /// Defines the PoetChainX contract storage.
     #[ink(storage)] // this macro marks the struct that represents your persistent storage on-chain.
     pub struct PoetChainX {
+        /// Stores a single `bool` value on the storage.
+        poem_id: [u8; 32],
         /// Stores a single `bool` value on the storage.
         poem: String,
         /// The poet that is selling their piece
@@ -23,7 +27,7 @@ mod poet_chain_x {
         /// simple approach whether auction is still ongoing.
         /// To avoid high CU, no need to cal if active using
         /// end block
-        active: bool,
+        pub active: bool,
     }
 
     #[ink(event)]
@@ -34,26 +38,26 @@ mod poet_chain_x {
         poem_id: [u8; 32], // hash of the poem
         poem_text: String,  // optional, may be big in storage but cheap in event
     }
-    
+
     #[ink(event)]
     pub struct BidPlaced {
         #[ink(topic)]
         bidder: Address,
-        amount: Balance,
+        amount: U256,
     }
 
     #[ink(event)]
     pub struct BidRefunded {
         #[ink(topic)]
         previous_bidder: Address,
-        amount: Balance,
+        amount: U256,
     }
 
     #[ink(event)]
     pub struct AuctionEnded {
         #[ink(topic)]
-        winner: Option<AccountId>,
-        amount: Balance,
+        winner: Option<Address>,
+        amount: U256,
     }
 
     impl PoetChainX {
@@ -63,13 +67,20 @@ mod poet_chain_x {
         pub fn new(poem: String, duration: BlockNumber) -> Self {
             let initiator = Self::env().caller();
             let current_block = Self::env().block_number();
+            let res_hash = Self::hash_poem(&poem.as_bytes());
+            Self::env().emit_event(AuctionCreated {
+                seller: initiator,
+                poem_id: res_hash,
+                poem_text: poem.clone()
+            });
             Self {
+                poem_id: res_hash,
                 poem,
                 seller: initiator,
                 highest_bid: U256::from(0),
                 highest_bidder: None,
                 end_block: current_block + duration,
-                active: false,
+                active: true,
             }
         }
 
@@ -79,8 +90,7 @@ mod poet_chain_x {
         pub fn bid(&mut self) {
             assert!(self.active, "Auction not active");
             let current_block = Self::env().block_number();
-            /// You can only place a bid if the current block is,
-            /// less than or equal to the auction’s end block.
+            // You can only place a bid if the current block is, less than or equal to the auction’s end block.
             assert!(current_block <= self.end_block, "Auction expired");
 
             let bidder = Self::env().caller();
@@ -90,14 +100,15 @@ mod poet_chain_x {
             // refund previous bidder
             if let Some(prev) = self.highest_bidder {
                 if self.highest_bid > U256::from(0) {
-                    Self::env().transfer(prev, self.highest_bid)
-                        .expect("Refund failed");
+                    Self::env().transfer(prev, self.highest_bid).expect("Refund failed");
+                    Self::env().emit_event(BidRefunded { previous_bidder: prev, amount: self.highest_bid})
                 }
             }
 
             // update the highest bid & bidder
             self.highest_bid = value;
             self.highest_bidder = Some(bidder);
+            Self::env().emit_event(BidPlaced { bidder, amount: value })
         }
 
         /// End auction and transfer funds to poet
@@ -111,6 +122,9 @@ mod poet_chain_x {
             if let Some(winner) = self.highest_bidder {
                 Self::env().transfer(self.seller, self.highest_bid)
                     .expect("Payout failed");
+                Self::env().emit_event(AuctionEnded { winner: Some(winner), amount: self.highest_bid})
+            } else {
+                Self::env().emit_event(AuctionEnded { winner: None, amount: self.highest_bid})
             }
         }
 
@@ -125,23 +139,123 @@ mod poet_chain_x {
         pub fn get_poem(&self) -> String {
             self.poem.clone()
         }
+
+        fn hash_poem(poem: &[u8]) -> [u8; 32] {
+            let mut result = <Blake2x256 as HashOutput>::Type::default();
+            hash_bytes::<Blake2x256>(poem, &mut result);
+            result
+        }
     }
 
-    /// Unit tests in Rust are normally defined within such a `#[cfg(test)]`
+    // Unit tests in Rust are normally defined within such a `#[cfg(test)]`
     /// module and test functions are marked with a `#[test]` attribute.
     /// The below code is technically just normal Rust code.
     #[cfg(test)]
     mod tests {
         /// Imports all the definitions from the outer scope so we can use them here.
         use super::*;
+        use ink::env::test;
 
-        /// We test a simple use case of our contract.
+        /// Happy path test - complete auction flow
         #[ink::test]
-        fn it_works() {
-            let mut poet_chain_x = PoetChainX::new(false);
-            assert_eq!(poet_chain_x.get(), false);
-            poet_chain_x.flip();
-            assert_eq!(poet_chain_x.get(), true);
+        fn happy_path_auction_flow() {
+            // Create contract with a poem and 100 block duration
+            let poem = "Roses are red, violets are blue".to_owned();
+            let mut contract = PoetChainX::new(poem.clone(), 100);
+
+
+            // Get the poem back
+            assert_eq!(contract.get_poem(), poem);
+
+            // Place a bid of 1000
+            let accounts = test::default_accounts();
+            test::set_caller(accounts.bob);
+            test::set_value_transferred(U256::from(1000));
+            contract.bid();
+
+            // Check winner info
+            let (winner, amount) = contract.get_winner();
+            assert_eq!(winner, Some(accounts.bob));
+            assert_eq!(amount, U256::from(1000));
+
+            // Advance past end block and end auction
+            test::set_block_number::<ink::env::DefaultEnvironment>(150);
+            contract.end_auction();
+
+            assert!(!contract.active);
+        }
+
+        /// Unhappy path 1: Bid on inactive auction (after ending)
+        #[ink::test]
+        #[should_panic(expected = "Auction not active")]
+        fn bid_on_inactive_auction() {
+            let poem = "Test poem".to_owned();
+            let mut contract = PoetChainX::new(poem, 100);
+
+            // End the auction first to make it inactive
+            test::set_block_number::<ink::env::DefaultEnvironment>(150);
+            contract.end_auction();
+
+            // Now try to bid on ended auction
+
+            let accounts = test::default_accounts();
+            test::set_caller(accounts.bob);
+            test::set_value_transferred(U256::from(1000));
+
+            // Create mutable reference for bidding
+            let mut contract = contract;
+            contract.bid(); // Should panic
+        }
+
+        /// Unhappy path 2: Bid after auction expired
+        #[ink::test]
+        #[should_panic(expected = "Auction expired")]
+        fn bid_after_expiry() {
+            let poem = "Test poem".to_owned();
+            let mut contract = PoetChainX::new(poem, 100);
+            // Contract starts with active = true
+
+            // Set block number past end_block
+            test::set_block_number::<ink::env::DefaultEnvironment>(150);
+
+            let accounts = test::default_accounts();
+            test::set_caller(accounts.bob);
+            test::set_value_transferred(U256::from(1000));
+
+            contract.bid(); // Should panic
+        }
+
+        /// Unhappy path 3: Bid too low
+        #[ink::test]
+        #[should_panic(expected = "Bid too low")]
+        fn bid_too_low() {
+            let poem = "Test poem".to_owned();
+            let mut contract = PoetChainX::new(poem, 100);
+            // Contract starts with active = true
+
+            let accounts = test::default_accounts();
+
+            // First bid
+            test::set_caller(accounts.bob);
+            test::set_value_transferred(U256::from(1000));
+            contract.bid();
+
+            // Second bid with lower amount
+            test::set_caller(accounts.charlie);
+            test::set_value_transferred(U256::from(500));
+
+            contract.bid(); // Should panic
+        }
+
+        /// Unhappy path 4: End auction while still running
+        #[ink::test]
+        #[should_panic(expected = "Auction still running")]
+        fn end_auction_early() {
+            let poem = "Test poem".to_owned();
+            let mut contract = PoetChainX::new(poem, 100);
+
+            // Current block is 0, end block is 100, so auction is still running
+            contract.end_auction(); // Should panic
         }
     }
 
