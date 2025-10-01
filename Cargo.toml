@@ -1,7 +1,7 @@
 [package]
 name = "poet_chain_x"
 version = "0.1.0"
-authors = ["[your_name] <[your_email]>"]
+authors = ["[christopher_kalule] <[christopher.kalule21@gmail.com]>"]
 edition = "2024"
 
 [dependencies]
