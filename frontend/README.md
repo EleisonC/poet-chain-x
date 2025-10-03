@@ -89,7 +89,7 @@ Click **"Connect Wallet"** and select an account from your Polkadot.js extension
 ### 2. Deploy a Contract (Optional)
 
 1. Navigate to the **"Deploy Contract"** tab
-2. Upload your `.wasm` contract file and metadata JSON
+2. Upload your `.polkavm` contract file and metadata JSON
 3. Set parameters and click **"Deploy Contract"**
 
 ### 3. Manage Auctions
@@ -126,10 +126,11 @@ npx papi
 
 ### Transaction Failures
 
-Check browser console for error messages. Common causes:
+Check the browser console for error messages. Common causes:
 - Insufficient balance for gas fees
 - Bid amount too low
 - Auction already ended
+- AccountUnmapped
 
 ## Network Information
 
