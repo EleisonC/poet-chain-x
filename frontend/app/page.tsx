@@ -15,8 +15,8 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8">
         <header className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Poem Chain X</h1>
-          <p className="text-muted-foreground text-lg">Auction your original poetry on the Polkadot blockchain</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Poet Chain X</h1>
+          <p className="text-muted-foreground text-lg">Auction your original poetry on the Polkadot blockchain (Paseo testnet)</p>
         </header>
 
         <div className="mb-6 flex justify-center">

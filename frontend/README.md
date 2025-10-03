@@ -44,29 +44,25 @@ npm install
 ### 3. Generate PAPI Descriptors
 
 ```bash
-# Add your contract to PAPI
-npx papi add poet_chain_x -n paseo
+# install the ink-sdk
+pnpm i @polkadot-api/sdk-ink
 
-# Generate the TypeScript descriptors
-npx papi
+# Begin by generating the type definitions for your chain
+pnpm papi add -w wss://testnet-passet-hub.polkadot.io passet
+
+# Begin by generating the type definitions for your contract.
+pnpm papi ink add ./contracts_p/poet_chain_x.json
+
 ```
 
 This creates the `.papi/descriptors/dist.ts` file with typed contract interfaces.
-
-### 4. Configure Environment (Optional)
-
-Create a `.env.local` file:
-
-```env
-NEXT_PUBLIC_WS_ENDPOINT=wss://paseo.rpc.amforc.com
-```
 
 ## Running the Project
 
 ### Development Mode
 
 ```bash
-npm run dev
+npm run dev | yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -89,7 +85,7 @@ Click **"Connect Wallet"** and select an account from your Polkadot.js extension
 ### 2. Deploy a Contract (Optional)
 
 1. Navigate to the **"Deploy Contract"** tab
-2. Upload your `.wasm` contract file and metadata JSON
+2. Upload your `.polkavm` contract file and metadata JSON
 3. Set parameters and click **"Deploy Contract"**
 
 ### 3. Manage Auctions
@@ -111,13 +107,6 @@ Once the auction expires, click **"End Auction"** to finalize.
 
 ## Troubleshooting
 
-### PAPI Descriptors Not Found
-
-```bash
-npx papi add poet_chain_x -n paseo
-npx papi
-```
-
 ### Wallet Not Connecting
 
 - Ensure Polkadot.js extension is installed and enabled
@@ -130,11 +119,12 @@ Check browser console for error messages. Common causes:
 - Insufficient balance for gas fees
 - Bid amount too low
 - Auction already ended
+- Account Not Mapped
 
 ## Network Information
 
 - **Network**: Paseo Testnet
-- **RPC Endpoint**: `wss://paseo.rpc.amforc.com`
+- **RPC Endpoint**: `wss://passet-hub-paseo.ibp.network` `wss://testnet-passet-hub.polkadot.io`
 - **Token**: PAS (Paseo testnet token)
 - **Decimals**: 12 (1 PAS = 10^12 Planck)
 
