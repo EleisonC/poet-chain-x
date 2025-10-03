@@ -16,7 +16,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <header className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-foreground mb-2">Poet Chain X</h1>
-          <p className="text-muted-foreground text-lg">Auction your original poetry on the Polkadot blockchain (Paseo testnet)</p>
+          <p className="text-muted-foreground text-lg">Auction your original poetry on the Polkadot blockchain (Paseo testnet Passet Hub)</p>
         </header>
 
         <div className="mb-6 flex justify-center">
