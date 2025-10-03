@@ -1,6 +1,6 @@
 # Poem Chain X
 
-A decentralized auction platform for poetry NFTs built on the Polkadot ecosystem. Poem Chain X enables users to deploy smart contracts, create poetry auctions, and participate in bidding using PAS tokens on the Paseo testnet.
+A decentralized auction platform for poetry NFTs built on the Polkadot ecosystem. Poem Chain X enables users to deploy smart contracts, create poetry auctions, and participate in bidding using PAS tokens on the Paseo testnet Passet Hub.
 
 ## Features
 
