@@ -115,7 +115,7 @@ Once the auction expires, click **"End Auction"** to finalize.
 
 ### Transaction Failures
 
-Check browser console for error messages. Common causes:
+Check the browser console for error messages. Common causes:
 - Insufficient balance for gas fees
 - Bid amount too low
 - Auction already ended
