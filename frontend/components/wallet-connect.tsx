@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState } from "react"
 import { web3Enable, web3Accounts } from "@polkadot/extension-dapp"
@@ -19,7 +19,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 
 // papi spec
-import { passetHub } from "../.papi/descriptors/"
+import { passet } from "../.papi/descriptors/"
 
 interface WalletConnectProps {
   isConnected: boolean
@@ -63,8 +63,6 @@ export function WalletConnect({ isConnected, account, onConnect, onDisconnect }:
       const provider = new WsProvider("wss://testnet-passet-hub.polkadot.io")
       const api = await ApiPromise.create({
         provider,
-        types: passetHub.types,
-        rpc: passetHub.rpc,
        })
 
       // Update with API once connected

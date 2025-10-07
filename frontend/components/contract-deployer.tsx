@@ -14,7 +14,7 @@ import { createInkSdk } from "@polkadot-api/sdk-ink"
 import { createClient } from "polkadot-api"
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
 import { getWsProvider } from "polkadot-api/ws-provider"
-import { contracts, passet } from '../.papi/descriptors/dist'
+import { contracts } from '../.papi/descriptors'
 import { Binary } from "polkadot-api";
 import { blake2AsU8a } from "@polkadot/util-crypto"
 import {
@@ -23,8 +23,6 @@ import {
   InjectedExtension,
   InjectedPolkadotAccount,
 } from "polkadot-api/pjs-signer"
-import { getInkClient } from "polkadot-api/ink"
-import { readFile } from "fs"
  
 
 interface ContractDeployerProps {

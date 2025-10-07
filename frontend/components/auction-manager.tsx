@@ -12,7 +12,7 @@ import { createInkSdk } from "@polkadot-api/sdk-ink"
 import { createClient } from "polkadot-api"
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
 import { getWsProvider } from "polkadot-api/ws-provider"
-import { contracts } from "../.papi/descriptors/dist"
+import { contracts } from  '../.papi/descriptors'
 import {
   getInjectedExtensions,
   connectInjectedExtension,
